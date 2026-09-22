@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>engine9 demo-id — Level 0 / Level 1</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <p class="brand">engine9 <span>demo-id</span></p>
+      <p class="tagline">Pure browser identity — no core database</p>
+      <div class="header-actions">
+        <button type="button" id="btn-level0" class="btn">Continue as Level 0</button>
+        <button type="button" id="btn-level1" class="btn btn-primary">Share Level 1 identity</button>
+        <button type="button" id="btn-logout" class="btn btn-ghost">Log out</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel status" aria-live="polite">
+        <h1>Your identity</h1>
+        <dl id="identity-summary">
+          <div><dt>Level</dt><dd id="out-level">—</dd></div>
+          <div><dt>UNID</dt><dd id="out-unid"><code>—</code></dd></div>
+          <div><dt>Profile</dt><dd id="out-profile">none</dd></div>
+          <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
+        </dl>
+        <p class="fine" id="level-meaning"></p>
+      </section>
+
+      <section class="panel public" data-section="public">
+        <h2>Public (everyone)</h2>
+        <p>
+          This section is always visible. Soft personalization never hard-blocks
+          the page — it only changes what we emphasize.
+        </p>
+      </section>
+
+      <section class="panel teaser" data-section="activist-teaser">
+        <h2>Activist preview</h2>
+        <p>
+          People with the <strong>Activist</strong> declared role at
+          <strong>Level 1+</strong> see the full briefing below. You can still
+          read this teaser at Level 0.
+        </p>
+        <label class="claim">
+          <input type="checkbox" id="claim-activist" />
+          Claim Activist role on this page (local only — not a segment)
+        </label>
+      </section>
+
+      <section class="panel activist hidden" data-section="activist" hidden>
+        <h2>Activist briefing (Content X)</h2>
+        <p>
+          Visible because you claimed <code>activist</code> and
+          <code>requiredAuth.minLevel = 1</code> is met. This is soft UI only —
+          graduate to <code>@engine9/core</code> + <code>person_segment</code>
+          for hard gates.
+        </p>
+        <ul>
+          <li>Upcoming actions and volunteer shifts</li>
+          <li>Private Slack invite link (demo placeholder)</li>
+          <li>Same <code>requiredAuth</code> shape as festival VIP/Admin roles</li>
+        </ul>
+      </section>
+
+      <section class="panel form-panel" data-section="form">
+        <h2>Level 1 person form</h2>
+        <p class="fine">
+          Field names match <code>@engine9/interfaces</code>
+          (<code>given_name</code>, <code>family_name</code>, <code>email</code>,
+          <code>email_type</code>). Submit echoes locally — the same JSON posts
+          to core <code>POST /people</code> in the festival demo.
+        </p>
+        <div id="person-form-mount"></div>
+        <pre id="form-echo" class="echo" hidden></pre>
+      </section>
+
+      <section class="panel debug">
+        <h2>Why sections show</h2>
+        <pre id="debug-eval"></pre>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Docs:
+        <a href="../id/docs/without-core.md">without core</a> ·
+        <a href="../id/docs/declared-roles.md">declared roles</a> ·
+        <a href="../id/docs/forms.md">forms</a> ·
+        With database:
+        <a href="../demo">festival demo</a>
+      </p>
+      <p class="fine">
+        Configure <code>window.DEMO_ID</code> before the script if needed
+        (<code>delegateUrl</code>, <code>domain</code>).
+      </p>
+    </footer>
+
+    <script>
+      window.DEMO_ID = window.DEMO_ID || {
+        // Override when not serving from a registered Site origin:
+        // delegateUrl: 'https://delegate.engine9.ai',
+        // domain: 'localhost:4173',
+      };
+    </script>
+    <script src="../id/dist/id.iife.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
