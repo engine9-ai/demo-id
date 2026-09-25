@@ -3,17 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>engine9 demo-id — Level 0 / Level 1</title>
+    <title>engine9 demo-id — content gates without a server</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="site-header">
       <p class="brand">engine9 <span>demo-id</span></p>
-      <p class="tagline">Pure browser identity — no core database</p>
+      <p class="tagline">Browser-only identity with soft content gates — no core database</p>
       <div class="header-actions">
-        <button type="button" id="btn-level0" class="btn">Continue as Level 0</button>
-        <button type="button" id="btn-level1" class="btn btn-primary">Share Level 1 identity</button>
-        <button type="button" id="btn-logout" class="btn btn-ghost">Log out</button>
+        <!-- data-e9-login buttons hide themselves once the visitor meets their Level. -->
+        <button type="button" class="btn" data-e9-login="0">Continue as Level 0</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-e9-login
+          data-e9-fields="given_name,family_name,email,display_name"
+        >
+          Log in (Level 1)
+        </button>
+        <button type="button" class="btn" data-e9-login data-e9-prompt="select" data-e9-min-level="1" hidden>
+          Switch profile
+        </button>
+        <button type="button" class="btn btn-ghost" data-e9-logout hidden>Log out</button>
+        <span class="greeting" data-e9-min-level="1" hidden>
+          Hello, <b data-e9-profile="given_name">reader</b>
+        </span>
       </div>
     </header>
 
@@ -21,19 +35,63 @@
       <section class="panel status" aria-live="polite">
         <h1>Your identity</h1>
         <dl id="identity-summary">
-          <div><dt>Level</dt><dd id="out-level">—</dd></div>
-          <div><dt>UNID</dt><dd id="out-unid"><code>—</code></dd></div>
+          <div><dt>Level</dt><dd><span data-e9-level>0</span> · <span data-e9-level="name">Inferred</span></dd></div>
+          <div><dt>Domain UNID</dt><dd id="out-unid"><code>—</code></dd></div>
           <div><dt>Profile</dt><dd id="out-profile">none</dd></div>
           <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
         </dl>
         <p class="fine" id="level-meaning"></p>
       </section>
 
+      <!--
+        Soft paywall, all in HTML. Gated markup starts `hidden` so it does not
+        flash; the teaser starts visible. engine9Id.mount() flips them.
+      -->
+      <article class="panel story" data-section="story">
+        <h2>City council approves new transit plan</h2>
+        <p>
+          The council voted 7–2 on Tuesday to fund the first phase of a plan that
+          adds three bus rapid transit lines by 2029. Supporters called it the
+          largest transit investment in a generation.
+        </p>
+
+        <div class="paywall" data-e9-max-level="0">
+          <p>Log in to keep reading. The rest of this article is gated at <strong>Level 1</strong>.</p>
+          <button type="button" class="btn btn-primary" data-e9-login data-e9-fields="given_name,email">
+            Log in to continue
+          </button>
+        </div>
+
+        <div class="story-body" data-e9-min-level="1" hidden>
+          <p>
+            Opponents questioned the funding model, which leans on a regional sales
+            tax that voters must approve next spring. “We are being asked to build
+            the bridge before we know if the river is there,” one member said.
+          </p>
+          <p>
+            Construction on the first line, connecting the university district to
+            downtown, is scheduled to begin in 2027.
+          </p>
+
+          <div class="comments" data-section="comments">
+            <h3>Comments</h3>
+            <p data-e9-max-level="1">
+              Commenting needs a confirmed email (<strong>Level 2</strong>).
+              <button type="button" class="btn" data-e9-login="2">Confirm email</button>
+            </p>
+            <p data-e9-min-level="2" hidden>
+              Your email is confirmed. The comment form would load here.
+            </p>
+          </div>
+        </div>
+      </article>
+
       <section class="panel public" data-section="public">
         <h2>Public (everyone)</h2>
         <p>
-          This section is always visible. Soft personalization never hard-blocks
-          the page — it only changes what we emphasize.
+          This section has no gate. Soft personalization never hard-blocks the
+          page; it changes what we show. The gated article text above is still
+          in the page source.
         </p>
       </section>
 
@@ -54,9 +112,10 @@
         <h2>Activist briefing (Content X)</h2>
         <p>
           Visible because you claimed <code>activist</code> and
-          <code>requiredAuth.minLevel = 1</code> is met. This is soft UI only —
-          graduate to <code>@engine9/core</code> + <code>person_segment</code>
-          for hard gates.
+          <code>requiredAuth.minLevel = 1</code> is met. This gate is evaluated
+          in JavaScript (<code>visibleContent</code>) because it combines a
+          page-local claim with a Level. Graduate to <code>@engine9/core</code> +
+          <code>person_segment</code> for hard gates.
         </p>
         <ul>
           <li>Upcoming actions and volunteer shifts</li>
@@ -86,6 +145,7 @@
     <footer class="site-footer">
       <p>
         Docs:
+        <a href="../id/README.md">id README (content gates)</a> ·
         <a href="../id/docs/without-core.md">without core</a> ·
         <a href="../id/docs/declared-roles.md">declared roles</a> ·
         <a href="../id/docs/forms.md">forms</a> ·
@@ -102,7 +162,7 @@
       window.DEMO_ID = window.DEMO_ID || {
         // Override when not serving from a registered Site origin:
         // delegateUrl: 'https://delegate.engine9.ai',
-        // domain: 'localhost:4173',
+        // domain: 'localhost:3002',
       };
     </script>
     <script src="../id/dist/id.iife.js"></script>

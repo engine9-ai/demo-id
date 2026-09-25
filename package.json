@@ -3,9 +3,9 @@
   "private": true,
   "license": "MIT",
   "version": "0.1.0",
-  "description": "Standalone Level 0/1 demo for @engine9/id (no core)",
+  "description": "Standalone content-gate demo for @engine9/id (no core, no server)",
   "scripts": {
     "build:id": "npm --prefix ../id run build",
-    "start": "npx --yes serve -p 4173 ."
+    "start": "npx --yes serve -l 3002 .."
   }
 }

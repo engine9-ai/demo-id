@@ -86,8 +86,56 @@ main {
   border-style: dashed;
 }
 
-.hidden[hidden] {
+/* Gated elements toggle the `hidden` attribute; keep it authoritative. */
+[hidden] {
   display: none !important;
+}
+
+.greeting {
+  align-self: center;
+  color: var(--muted);
+}
+
+.greeting b {
+  color: var(--text);
+}
+
+.panel.story h2 {
+  font-size: 1.35rem;
+}
+
+.panel.story h3 {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+}
+
+/* Set by id.gate() in app.js while the visitor is below Level 1. */
+.panel.story.locked {
+  background:
+    linear-gradient(180deg, transparent 55%, color-mix(in srgb, var(--surface) 92%, transparent) 100%),
+    color-mix(in srgb, var(--surface) 92%, transparent);
+}
+
+.paywall {
+  margin-top: 0.75rem;
+  padding: 1rem 1.15rem;
+  border: 1px dashed var(--accent-2);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent-2) 8%, var(--surface));
+}
+
+.paywall p {
+  margin: 0 0 0.65rem;
+}
+
+.comments {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.comments .btn {
+  margin-left: 0.5rem;
 }
 
 .btn {

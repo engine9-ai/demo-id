@@ -1,11 +1,16 @@
 /**
- * Soft Level 0 / Level 1 demo using @engine9/id (IIFE → window.engine9Id).
- * Declared roles are page-local; content is never hard-blocked.
+ * Soft content-gate demo using @engine9/id (IIFE → window.engine9Id).
+ *
+ * Three ways to gate content, all soft (never hard-blocked):
+ *   1. HTML attributes (`data-e9-min-level`, `data-e9-max-level`, `data-e9-login`,
+ *      `data-e9-profile`, …) handled by `engine9Id.mount()` — see index.html.
+ *   2. `id.gate({ minLevel, onAllow, onBlock })` hooks — the article blur below.
+ *   3. Declared roles (`visibleContent`) when a page-local claim is involved.
  */
 
 const cfg = window.DEMO_ID || {};
 const {
-  createEngine9Id,
+  mount,
   describeLevel,
   createRoleRegistry,
   visibleContent,
@@ -24,10 +29,27 @@ const roles = createRoleRegistry({
   },
 });
 
-const id = createEngine9Id({
+function el(sel) {
+  return document.querySelector(sel);
+}
+
+function setText(sel, text) {
+  const node = el(sel);
+  if (node) node.textContent = text;
+}
+
+function showError(err) {
+  console.error(err);
+  const code = err?.code || err?.message || String(err);
+  setText('#level-meaning', `Login did not finish: ${code}`);
+}
+
+// 1. One call: create the client, finish a returning login, bind data-e9-* markup.
+const id = mount({
   delegateUrl: cfg.delegateUrl,
   domain: cfg.domain,
   storage: 'session',
+  onError: showError,
 });
 
 function readClaims() {
@@ -44,24 +66,37 @@ function writeClaims(ids) {
   localStorage.setItem(CLAIM_KEY, JSON.stringify([...new Set(ids)]));
 }
 
-function el(sel) {
-  return document.querySelector(sel);
+// 2. JavaScript hook: blur the story container while blocked, in addition to
+//    the hidden/shown paragraphs the attributes manage.
+id.gate({
+  minLevel: 1,
+  onAllow: () => el('[data-section="story"]')?.classList.remove('locked'),
+  onBlock: () => el('[data-section="story"]')?.classList.add('locked'),
+});
+
+/** Short label for the debug panel: which data-e9-* rule an element carries. */
+function gateLabel(node) {
+  const section = node.getAttribute('data-section');
+  const parts = [];
+  if (node.hasAttribute('data-e9-login')) parts.push(`login≥${node.getAttribute('data-e9-login') || '1'}`);
+  if (node.hasAttribute('data-e9-logout')) parts.push('logout');
+  if (node.hasAttribute('data-e9-min-level')) parts.push(`min=${node.getAttribute('data-e9-min-level')}`);
+  if (node.hasAttribute('data-e9-max-level')) parts.push(`max=${node.getAttribute('data-e9-max-level')}`);
+  if (node.hasAttribute('data-e9-two-factor')) parts.push('2fa');
+  const rule = parts.join(',') || 'none';
+  const text = (node.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 24);
+  return `${section || node.tagName.toLowerCase()} [${rule}] ${text ? `"${text}"` : ''}`.trim();
 }
 
-function setText(sel, text) {
-  const node = el(sel);
-  if (node) node.textContent = text;
-}
-
+// 3. Declared role + status panel + debug: anything the attributes cannot express.
 function render() {
   const identity = id.getIdentity();
   const level = identity?.level ?? 0;
   const desc = describeLevel(level);
   const claims = readClaims();
 
-  setText('#out-level', `${level} · ${desc.name}`);
-  el('#out-unid').innerHTML = identity?.unid
-    ? `<code>${identity.unid}</code>`
+  el('#out-unid').innerHTML = identity?.sub
+    ? `<code>${identity.sub}</code>`
     : '<code>—</code>';
 
   const profile = identity?.profile;
@@ -72,7 +107,7 @@ function render() {
       profile.email,
       profile.display_name,
     ].filter(Boolean);
-    setText('#out-profile', bits.join(' · ') || profile.id);
+    setText('#out-profile', bits.join(' · ') || '(no fields shared)');
   } else {
     setText('#out-profile', 'none');
   }
@@ -95,12 +130,18 @@ function render() {
     activistSection.classList.toggle('hidden', !show);
   }
 
+  const gates = {};
+  for (const node of document.querySelectorAll('[data-e9-state]')) {
+    gates[gateLabel(node)] = node.getAttribute('data-e9-state');
+  }
+
   el('#debug-eval').textContent = JSON.stringify(
     {
       level,
       claims,
-      evaluations,
-      note: 'visible = matches && meetsAuth — soft only',
+      declaredRoles: evaluations,
+      dataE9Gates: gates,
+      note: 'All gates are soft. visible = matches && meetsAuth for declared roles.',
     },
     null,
     2,
@@ -108,38 +149,9 @@ function render() {
 }
 
 async function boot() {
-  await id.handleCallback();
+  id.onChange(render);
+  await id.ready;
   render();
-  id.onChange(() => render());
-
-  el('#btn-level0')?.addEventListener('click', async () => {
-    try {
-      await id.requestIdentity({ minLevel: 0, mode: 'popup' });
-      render();
-    } catch (err) {
-      console.error(err);
-      alert(err?.message || String(err));
-    }
-  });
-
-  el('#btn-level1')?.addEventListener('click', async () => {
-    try {
-      await id.requestIdentity({
-        minLevel: 1,
-        mode: 'popup',
-        fields: ['given_name', 'family_name', 'email', 'display_name'],
-      });
-      render();
-    } catch (err) {
-      console.error(err);
-      alert(err?.message || String(err));
-    }
-  });
-
-  el('#btn-logout')?.addEventListener('click', () => {
-    id.logout();
-    render();
-  });
 
   el('#claim-activist')?.addEventListener('change', (event) => {
     const checked = event.target.checked;
@@ -169,15 +181,11 @@ async function boot() {
 
       // Optionally step up identity using Profile fields (not email_type).
       const fields = identityFieldsFromPersonPayload(payload);
-      if (fields.length && (!id.getIdentity() || id.level < 1)) {
+      if (fields.length && id.level < 1) {
         try {
-          await id.requestIdentity({
-            minLevel: 1,
-            mode: 'popup',
-            fields,
-          });
+          await id.requestIdentity({ minLevel: 1, mode: 'popup', fields });
         } catch (err) {
-          console.warn('identity step-up skipped', err);
+          showError(err);
         }
       }
       render();
@@ -188,7 +196,4 @@ async function boot() {
   window.idDemo = { id, roles, normalizePersonPayload, render };
 }
 
-boot().catch((err) => {
-  console.error(err);
-  el('#level-meaning').textContent = err?.message || String(err);
-});
+boot().catch(showError);
