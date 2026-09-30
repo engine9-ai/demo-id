@@ -17,16 +17,17 @@
           type="button"
           class="btn btn-primary"
           data-e9-login
-          data-e9-fields="given_name,family_name,email,display_name"
+          data-e9-fields="given_name,family_name,email"
+          data-e9-optional-fields="display_name"
         >
           Log in (Level 1)
         </button>
         <button type="button" class="btn" data-e9-login data-e9-prompt="select" data-e9-min-level="1" hidden>
-          Switch profile
+          Choose fields again
         </button>
         <button type="button" class="btn btn-ghost" data-e9-logout hidden>Log out</button>
         <span class="greeting" data-e9-min-level="1" hidden>
-          Hello, <b data-e9-profile="given_name">reader</b>
+          Hello, <b data-e9-field="given_name">reader</b>
         </span>
       </div>
     </header>
@@ -37,7 +38,7 @@
         <dl id="identity-summary">
           <div><dt>Level</dt><dd><span data-e9-level>0</span> · <span data-e9-level="name">Inferred</span></dd></div>
           <div><dt>Domain UNID</dt><dd id="out-unid"><code>—</code></dd></div>
-          <div><dt>Profile</dt><dd id="out-profile">none</dd></div>
+          <div><dt>Fields</dt><dd id="out-profile">none</dd></div>
           <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
         </dl>
         <p class="fine" id="level-meaning"></p>

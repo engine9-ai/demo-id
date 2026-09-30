@@ -3,7 +3,7 @@
  *
  * Three ways to gate content, all soft (never hard-blocked):
  *   1. HTML attributes (`data-e9-min-level`, `data-e9-max-level`, `data-e9-login`,
- *      `data-e9-profile`, …) handled by `engine9Id.mount()` — see index.html.
+ *      `data-e9-field`, …) handled by `engine9Id.mount()` — see index.html.
  *   2. `id.gate({ minLevel, onAllow, onBlock })` hooks — the article blur below.
  *   3. Declared roles (`visibleContent`) when a page-local claim is involved.
  */
@@ -99,13 +99,13 @@ function render() {
     ? `<code>${identity.sub}</code>`
     : '<code>—</code>';
 
-  const profile = identity?.profile;
-  if (profile) {
+  const shared = identity?.fields;
+  if (shared) {
     const bits = [
-      profile.given_name,
-      profile.family_name,
-      profile.email,
-      profile.display_name,
+      shared.given_name,
+      shared.family_name,
+      shared.email,
+      shared.display_name,
     ].filter(Boolean);
     setText('#out-profile', bits.join(' · ') || '(no fields shared)');
   } else {
@@ -179,7 +179,7 @@ async function boot() {
         2,
       );
 
-      // Optionally step up identity using Profile fields (not email_type).
+      // Optionally step up identity using shared fields (not email_type).
       const fields = identityFieldsFromPersonPayload(payload);
       if (fields.length && id.level < 1) {
         try {

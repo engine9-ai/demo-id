@@ -10,7 +10,7 @@ It shows the three ways `@engine9/id` gates content in the browser, all soft
 (the markup is still in the page; the library only hides and shows it):
 
 1. **HTML attributes** — `data-e9-login`, `data-e9-logout`, `data-e9-min-level`,
-   `data-e9-max-level`, `data-e9-profile`, `data-e9-level`, handled by
+   `data-e9-max-level`, `data-e9-field`, `data-e9-level`, handled by
    `engine9Id.mount()`. See the article with a soft paywall in
    [index.html](./index.html).
 2. **JavaScript hooks** — `id.gate({ minLevel, onAllow, onBlock })` blurs the
@@ -55,12 +55,12 @@ Optional config before `app.js`:
 
 | Piece | Behavior |
 | --- | --- |
-| Level 0 button | `data-e9-login="0"`: UNID only, no Profile |
-| Level 1 button | `data-e9-login` with `data-e9-fields`: pick a Profile, share name and email |
-| Switch profile | `data-e9-prompt="select"` forces the chooser; shown only at Level 1+ via an explicit `data-e9-min-level` |
+| Level 0 button | `data-e9-login="0"`: UNID only, no fields |
+| Level 1 button | `data-e9-login` with `data-e9-fields`: share name and email |
+| Choose fields again | `data-e9-prompt="select"` shows the field form; shown only at Level 1+ via an explicit `data-e9-min-level` |
 | Soft paywall | Teaser `data-e9-max-level="0"`, body `data-e9-min-level="1" hidden` |
 | Comments | `data-e9-login="2"` and a `data-e9-min-level="2"` block (confirmed email) |
-| Greeting | `data-e9-profile="given_name"`, `data-e9-level`, `data-e9-level="name"` |
+| Greeting | `data-e9-field="given_name"`, `data-e9-level`, `data-e9-level="name"` |
 | Blur | `id.gate()` toggles a `.locked` class on the article |
 | Declared role | Claim Activist locally; soft-show Content X when level ≥ 1 |
 | Person form | `given_name` / `family_name` / `email` / `email_type` — local JSON echo |

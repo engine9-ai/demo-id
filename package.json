@@ -2,7 +2,7 @@
   "name": "demo-id",
   "private": true,
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Standalone content-gate demo for @engine9/id (no core, no server)",
   "scripts": {
     "build:id": "npm --prefix ../id run build",
