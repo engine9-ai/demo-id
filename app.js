@@ -80,6 +80,7 @@ function gateLabel(node) {
   const parts = [];
   if (node.hasAttribute('data-e9-login')) parts.push(`login≥${node.getAttribute('data-e9-login') || '1'}`);
   if (node.hasAttribute('data-e9-logout')) parts.push('logout');
+  if (node.hasAttribute('data-e9-change-delegate')) parts.push('change-delegate');
   if (node.hasAttribute('data-e9-min-level')) parts.push(`min=${node.getAttribute('data-e9-min-level')}`);
   if (node.hasAttribute('data-e9-max-level')) parts.push(`max=${node.getAttribute('data-e9-max-level')}`);
   if (node.hasAttribute('data-e9-two-factor')) parts.push('2fa');
@@ -107,9 +108,9 @@ function render() {
       shared.email,
       shared.display_name,
     ].filter(Boolean);
-    setText('#out-profile', bits.join(' · ') || '(no fields shared)');
+    setText('#out-fields', bits.join(' · ') || '(no fields shared)');
   } else {
-    setText('#out-profile', 'none');
+    setText('#out-fields', 'none');
   }
 
   setText('#out-claims', claims.length ? claims.join(', ') : 'none');

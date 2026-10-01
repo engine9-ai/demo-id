@@ -22,8 +22,17 @@
         >
           Log in (Level 1)
         </button>
-        <button type="button" class="btn" data-e9-login data-e9-prompt="select" data-e9-min-level="1" hidden>
-          Choose fields again
+        <!-- Shown once signed in. Reopens delegate's share page (prompt=select)
+             to pick another email address or change what is shared. -->
+        <button
+          type="button"
+          class="btn"
+          data-e9-change-delegate
+          data-e9-fields="given_name,family_name,email"
+          data-e9-optional-fields="display_name"
+          hidden
+        >
+          Change your Delegate information
         </button>
         <button type="button" class="btn btn-ghost" data-e9-logout hidden>Log out</button>
         <span class="greeting" data-e9-min-level="1" hidden>
@@ -38,10 +47,28 @@
         <dl id="identity-summary">
           <div><dt>Level</dt><dd><span data-e9-level>0</span> · <span data-e9-level="name">Inferred</span></dd></div>
           <div><dt>Domain UNID</dt><dd id="out-unid"><code>—</code></dd></div>
-          <div><dt>Fields</dt><dd id="out-profile">none</dd></div>
+          <div><dt>Shared fields</dt><dd id="out-fields">none</dd></div>
           <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
         </dl>
         <p class="fine" id="level-meaning"></p>
+        <p class="fine" data-e9-min-level="1" hidden>
+          Shared the wrong email address? Signing in again goes straight through,
+          because delegate remembers your choice.
+          <button type="button" class="btn btn-ghost" data-e9-change-delegate>
+            Change your Delegate information
+          </button>
+          to pick another address, add one, or use a different Google account.
+        </p>
+        <p class="fine">
+          Required fields (<code>data-e9-fields</code>) are locked on the share page.
+          Optional fields (<code>data-e9-optional-fields</code>) are checkboxes.
+          Level 0 asks for none.
+          Level 1 requires <code>given_name</code>, <code>family_name</code>,
+          and <code>email</code>, with <code>display_name</code> optional.
+          The article requires <code>given_name</code> and <code>email</code>.
+          Confirm email requires <code>email</code> at Level 2.
+          <code>email_type</code> stays on the site form below.
+        </p>
       </section>
 
       <!--
@@ -78,7 +105,7 @@
             <h3>Comments</h3>
             <p data-e9-max-level="1">
               Commenting needs a confirmed email (<strong>Level 2</strong>).
-              <button type="button" class="btn" data-e9-login="2">Confirm email</button>
+              <button type="button" class="btn" data-e9-login="2" data-e9-fields="email">Confirm email</button>
             </p>
             <p data-e9-min-level="2" hidden>
               Your email is confirmed. The comment form would load here.

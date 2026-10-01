@@ -9,7 +9,8 @@ distribute this code as-is.
 It shows the three ways `@engine9/id` gates content in the browser, all soft
 (the markup is still in the page; the library only hides and shows it):
 
-1. **HTML attributes** — `data-e9-login`, `data-e9-logout`, `data-e9-min-level`,
+1. **HTML attributes** — `data-e9-login`, `data-e9-logout`,
+   `data-e9-change-delegate`, `data-e9-min-level`,
    `data-e9-max-level`, `data-e9-field`, `data-e9-level`, handled by
    `engine9Id.mount()`. See the article with a soft paywall in
    [index.html](./index.html).
@@ -55,9 +56,11 @@ Optional config before `app.js`:
 
 | Piece | Behavior |
 | --- | --- |
-| Level 0 button | `data-e9-login="0"`: UNID only, no fields |
-| Level 1 button | `data-e9-login` with `data-e9-fields`: share name and email |
-| Choose fields again | `data-e9-prompt="select"` shows the field form; shown only at Level 1+ via an explicit `data-e9-min-level` |
+| Level 0 button | `data-e9-login="0"`: UNID only. No `fields` and no `optional_fields` |
+| Level 1 button | Required `given_name`, `family_name`, `email` (`data-e9-fields`). Optional `display_name` (`data-e9-optional-fields`) |
+| Change your Delegate information | `data-e9-change-delegate` with the Level 1 field lists. Shown only when signed in. Reopens the share page (`prompt=select`) to pick another email address, add one, or switch Google accounts |
+| Article login | Required `given_name` and `email` |
+| Confirm email | Level 2 with required `email` |
 | Soft paywall | Teaser `data-e9-max-level="0"`, body `data-e9-min-level="1" hidden` |
 | Comments | `data-e9-login="2"` and a `data-e9-min-level="2"` block (confirmed email) |
 | Greeting | `data-e9-field="given_name"`, `data-e9-level`, `data-e9-level="name"` |
@@ -65,6 +68,24 @@ Optional config before `app.js`:
 | Declared role | Claim Activist locally; soft-show Content X when level ≥ 1 |
 | Person form | `given_name` / `family_name` / `email` / `email_type` — local JSON echo |
 | Debug panel | `data-e9-state` (`allowed` / `blocked`) for every gated element |
+
+## Requested fields
+
+`data-e9-fields` is the required list. Those names are locked on
+delegate’s share page, and each one needs a value before the Level is
+met. `data-e9-optional-fields` are checkboxes; declining one does not
+bring the share page back on a later visit. A Level 0 login sends
+neither list.
+
+Shareable names are `display_name`, `given_name`, `family_name`,
+`email`, `phone`, and `attributes`. When a login omits both lists,
+delegate requires `display_name` and `email`. `email_type` is a site
+people field on the form; it is not sent as a delegate share field.
+
+`prompt=select` (“Change your Delegate information”) opens the share page
+even when the Grant already covers the request. A signed-in visitor who
+shared the wrong address uses it to pick another one; logging in again
+would go straight through with the remembered choice.
 
 Docs in `@engine9/id`:
 
