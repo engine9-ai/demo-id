@@ -11,6 +11,7 @@
 const cfg = window.DEMO_ID || {};
 const {
   mount,
+  loginWidget,
   describeLevel,
   createRoleRegistry,
   visibleContent,
@@ -65,6 +66,24 @@ function readClaims() {
 function writeClaims(ids) {
   localStorage.setItem(CLAIM_KEY, JSON.stringify([...new Set(ids)]));
 }
+
+// The header's Delegate Login button. Same request as the old header buttons;
+// its Role section claims the page-local Activist role.
+const widget = loginWidget({
+  id,
+  delegateUrl: cfg.delegateUrl,
+  siteName: 'demo-id',
+  fields: ['given_name', 'family_name', 'email'],
+  optionalFields: ['display_name'],
+  roles,
+  role: readClaims()[0] ?? null,
+  onRoleChange: (roleId) => {
+    writeClaims([roleId]);
+    render();
+  },
+  onLogout: () => writeClaims([]),
+  onError: showError,
+});
 
 // 2. JavaScript hook: blur the story container while blocked, in addition to
 //    the hidden/shown paragraphs the attributes manage.
@@ -160,6 +179,7 @@ async function boot() {
     if (checked) next.add('activist');
     else next.delete('activist');
     writeClaims([...next]);
+    widget.update({ role: next.has('activist') ? 'activist' : null });
     render();
   });
 
@@ -194,7 +214,7 @@ async function boot() {
   });
 
   // Helpful for console experimentation
-  window.idDemo = { id, roles, normalizePersonPayload, render };
+  window.idDemo = { id, widget, roles, normalizePersonPayload, render };
 }
 
 boot().catch(showError);
