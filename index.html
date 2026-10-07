@@ -13,28 +13,9 @@
       <div class="header-actions">
         <!-- data-e9-login buttons hide themselves once the visitor meets their Level. -->
         <button type="button" class="btn" data-e9-login="0">Continue as Level 0</button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-e9-login
-          data-e9-fields="given_name,family_name,email"
-          data-e9-optional-fields="display_name"
-        >
-          Log in (Level 1)
-        </button>
-        <!-- Shown once signed in. Reopens delegate's share page (prompt=select)
-             to pick another email address or change what is shared. -->
-        <button
-          type="button"
-          class="btn"
-          data-e9-change-delegate
-          data-e9-fields="given_name,family_name,email"
-          data-e9-optional-fields="display_name"
-          hidden
-        >
-          Change your Delegate information
-        </button>
-        <button type="button" class="btn btn-ghost" data-e9-logout hidden>Log out</button>
+        <!-- engine9Id.loginWidget() puts the Delegate Login button here. Its
+             dialog logs in, switches email, changes role, and logs out. -->
+        <span data-e9-login-widget></span>
         <span class="greeting" data-e9-min-level="1" hidden>
           Hello, <b data-e9-field="given_name">reader</b>
         </span>
@@ -155,7 +136,7 @@
       <section class="panel form-panel" data-section="form">
         <h2>Level 1 person form</h2>
         <p class="fine">
-          Field names match <code>@engine9/interfaces</code>
+          Field names match <code>@engine9/schemas</code>
           (<code>given_name</code>, <code>family_name</code>, <code>email</code>,
           <code>email_type</code>). Submit echoes locally — the same JSON posts
           to core <code>POST /people</code> in the festival demo.

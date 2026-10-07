@@ -6,20 +6,28 @@ against **delegate** — no `@engine9/core`, no database, no server code.
 This repository is [MIT licensed](./LICENSE). Use, copy, modify, and
 distribute this code as-is.
 
-It shows the three ways `@engine9/id` gates content in the browser, all soft
-(the markup is still in the page; the library only hides and shows it):
+Visitors interact with Delegate through the **login widget** in the header,
+the main way to add Delegate to a site. One **Login** button shows who is
+logged in and their role; its dialog logs in with Google, switches email,
+changes role, and logs out, all without leaving the page. It is one
+`engine9Id.loginWidget()` call in [app.js](./app.js) and one
+`<span data-e9-login-widget>` in [index.html](./index.html).
 
-1. **HTML attributes** — `data-e9-login`, `data-e9-logout`,
-   `data-e9-change-delegate`, `data-e9-min-level`,
-   `data-e9-max-level`, `data-e9-field`, `data-e9-level`, handled by
-   `engine9Id.mount()`. See the article with a soft paywall in
-   [index.html](./index.html).
+The page then shows the three ways `@engine9/id` gates content in the
+browser, all soft (the markup is still in the page; the library only hides
+and shows it):
+
+1. **HTML attributes** — `data-e9-min-level`, `data-e9-max-level`,
+   `data-e9-field`, `data-e9-level`, plus in-content `data-e9-login` and
+   `data-e9-change-delegate` buttons, handled by `engine9Id.mount()`. See
+   the article with a soft paywall in [index.html](./index.html).
 2. **JavaScript hooks** — `id.gate({ minLevel, onAllow, onBlock })` blurs the
    story while the visitor is below Level 1 ([app.js](./app.js)).
-3. **Declared roles** — the `activist` role combines a page-local claim with
+3. **Declared roles** — the `activist` role combines a page-local claim
+   (made from the widget's Role section or the checkbox) with
    `requiredAuth.minLevel: 1` via `visibleContent`.
 
-Plus a Level 1 person form with `@engine9/interfaces` field names.
+Plus a Level 1 person form with `@engine9/schemas` field names.
 
 ## Run
 
@@ -56,9 +64,9 @@ Optional config before `app.js`:
 
 | Piece | Behavior |
 | --- | --- |
+| Login widget (header) | `engine9Id.loginWidget()`. The button shows the shared email and claimed role, or "Login". Its dialog logs in at Level 1 (required `given_name`, `family_name`, `email`; optional `display_name`), switches email (`prompt=select`), claims the Activist role, and logs out (optionally of Delegate too) |
+| Change your Delegate information | `data-e9-change-delegate` under "Your identity", with the Level 1 field lists. Shown only when signed in. Reopens the share page (`prompt=select`) to pick another email address, add one, or switch Google accounts |
 | Level 0 button | `data-e9-login="0"`: UNID only. No `fields` and no `optional_fields` |
-| Level 1 button | Required `given_name`, `family_name`, `email` (`data-e9-fields`). Optional `display_name` (`data-e9-optional-fields`) |
-| Change your Delegate information | `data-e9-change-delegate` with the Level 1 field lists. Shown only when signed in. Reopens the share page (`prompt=select`) to pick another email address, add one, or switch Google accounts |
 | Article login | Required `given_name` and `email` |
 | Confirm email | Level 2 with required `email` |
 | Soft paywall | Teaser `data-e9-max-level="0"`, body `data-e9-min-level="1" hidden` |
@@ -89,7 +97,7 @@ would go straight through with the remembered choice.
 
 Docs in `@engine9/id`:
 
-- [README](../id/README.md) — install, attribute table, hooks, troubleshooting
+- [README](../id/README.md) — install, [the login widget](../id/README.md#the-login-widget), attribute table, hooks, troubleshooting
 - [deploy.md](../id/docs/deploy.md) — first-time steps
 - [without-core.md](../id/docs/without-core.md)
 - [declared-roles.md](../id/docs/declared-roles.md)
