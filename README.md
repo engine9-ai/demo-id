@@ -11,15 +11,17 @@ the main way to add Delegate to a site. One **Login** button shows who is
 logged in and their role; its dialog logs in with Google, switches email,
 changes role, and logs out, all without leaving the page. It is one
 `engine9Id.loginWidget()` call in [app.js](./app.js) and one
-`<span data-e9-login-widget>` in [index.html](./index.html).
+`<span data-e9-login-widget>` in [index.html](./index.html). The header
+holds nothing else; other "Login" links on the page call `widget.open()`.
 
 The page then shows the three ways `@engine9/id` gates content in the
 browser, all soft (the markup is still in the page; the library only hides
 and shows it):
 
 1. **HTML attributes** — `data-e9-min-level`, `data-e9-max-level`,
-   `data-e9-field`, `data-e9-level`, plus in-content `data-e9-login` and
-   `data-e9-change-delegate` buttons, handled by `engine9Id.mount()`. See
+   `data-e9-field`, `data-e9-level`, plus in-content `data-e9-login`
+   buttons for one step (Level 0, the paywall, Confirm email), handled by
+   `engine9Id.mount()`. See
    the article with a soft paywall in [index.html](./index.html).
 2. **JavaScript hooks** — `id.gate({ minLevel, onAllow, onBlock })` blurs the
    story while the visitor is below Level 1 ([app.js](./app.js)).
@@ -65,8 +67,8 @@ Optional config before `app.js`:
 | Piece | Behavior |
 | --- | --- |
 | Login widget (header) | `engine9Id.loginWidget()`. The button shows the shared email and claimed role, or "Login". Its dialog logs in at Level 1 (required `given_name`, `family_name`, `email`; optional `display_name`), switches email (`prompt=select`), claims the Activist role, and logs out (optionally of Delegate too) |
-| Change your Delegate information | `data-e9-change-delegate` under "Your identity", with the Level 1 field lists. Shown only when signed in. Reopens the share page (`prompt=select`) to pick another email address, add one, or switch Google accounts |
-| Level 0 button | `data-e9-login="0"`: UNID only. No `fields` and no `optional_fields` |
+| Wrong email address | Under "Your identity", shown only when signed in: a Login link (`widget.open()`) pointing to the dialog's **Switch email**, which reopens the share page (`prompt=select`) to pick another email address, add one, or switch Google accounts |
+| Level 0 button | `data-e9-login="0"` under "Your identity": UNID only. No `fields` and no `optional_fields` |
 | Article login | Required `given_name` and `email` |
 | Confirm email | Level 2 with required `email` |
 | Soft paywall | Teaser `data-e9-max-level="0"`, body `data-e9-min-level="1" hidden` |
@@ -90,7 +92,7 @@ Shareable names are `display_name`, `given_name`, `family_name`,
 delegate requires `display_name` and `email`. `email_type` is a site
 people field on the form; it is not sent as a delegate share field.
 
-`prompt=select` (“Change your Delegate information”) opens the share page
+`prompt=select` (the widget's **Switch email**) opens the share page
 even when the Grant already covers the request. A signed-in visitor who
 shared the wrong address uses it to pick another one; logging in again
 would go straight through with the remembered choice.

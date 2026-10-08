@@ -11,10 +11,9 @@
       <p class="brand">engine9 <span>demo-id</span></p>
       <p class="tagline">Browser-only identity with soft content gates — no core database</p>
       <div class="header-actions">
-        <!-- data-e9-login buttons hide themselves once the visitor meets their Level. -->
-        <button type="button" class="btn" data-e9-login="0">Continue as Level 0</button>
-        <!-- engine9Id.loginWidget() puts the Delegate Login button here. Its
-             dialog logs in, switches email, changes role, and logs out. -->
+        <!-- The default way to use Delegate: engine9Id.loginWidget() puts the
+             Login button here. Its dialog logs in, switches email, changes
+             role, and logs out. -->
         <span data-e9-login-widget></span>
         <span class="greeting" data-e9-min-level="1" hidden>
           Hello, <b data-e9-field="given_name">reader</b>
@@ -32,13 +31,17 @@
           <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
         </dl>
         <p class="fine" id="level-meaning"></p>
+        <p class="fine">
+          A Level 0 login shares no fields; the page gets only a Domain UNID.
+          <!-- data-e9-login buttons hide themselves once the visitor meets their Level. -->
+          <button type="button" class="btn btn-ghost" data-e9-login="0">Continue as Level 0</button>
+        </p>
         <p class="fine" data-e9-min-level="1" hidden>
           Shared the wrong email address? Signing in again goes straight through,
-          because delegate remembers your choice.
-          <button type="button" class="btn btn-ghost" data-e9-change-delegate>
-            Change your Delegate information
-          </button>
-          to pick another address, add one, or use a different Google account.
+          because delegate remembers your choice. Open
+          <button type="button" class="btn btn-ghost" data-open-login>Login</button>
+          and choose <strong>Switch email</strong> to pick another address, add
+          one, or use a different Google account.
         </p>
         <p class="fine">
           Required fields (<code>data-e9-fields</code>) are locked on the share page.
@@ -159,7 +162,7 @@
         <a href="../id/docs/declared-roles.md">declared roles</a> ·
         <a href="../id/docs/forms.md">forms</a> ·
         With database:
-        <a href="../demo">festival demo</a>
+        <a href="../demo-festival/README.md">festival demo</a>
       </p>
       <p class="fine">
         Configure <code>window.DEMO_ID</code> before the script if needed

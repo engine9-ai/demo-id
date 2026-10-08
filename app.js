@@ -1,6 +1,9 @@
 /**
  * Soft content-gate demo using @engine9/id (IIFE → window.engine9Id).
  *
+ * Visitors use Delegate through `engine9Id.loginWidget()`, the header's Login
+ * button: one dialog to log in, switch email, change role, and log out.
+ *
  * Three ways to gate content, all soft (never hard-blocked):
  *   1. HTML attributes (`data-e9-min-level`, `data-e9-max-level`, `data-e9-login`,
  *      `data-e9-field`, …) handled by `engine9Id.mount()` — see index.html.
@@ -67,8 +70,8 @@ function writeClaims(ids) {
   localStorage.setItem(CLAIM_KEY, JSON.stringify([...new Set(ids)]));
 }
 
-// The header's Delegate Login button. Same request as the old header buttons;
-// its Role section claims the page-local Activist role.
+// The header's Delegate Login button. Its Role section claims the page-local
+// Activist role.
 const widget = loginWidget({
   id,
   delegateUrl: cfg.delegateUrl,
@@ -83,6 +86,11 @@ const widget = loginWidget({
   },
   onLogout: () => writeClaims([]),
   onError: showError,
+});
+
+// Other "Login" links on the page open the same dialog.
+document.addEventListener('click', (event) => {
+  if (event.target instanceof Element && event.target.closest('[data-open-login]')) widget.open();
 });
 
 // 2. JavaScript hook: blur the story container while blocked, in addition to
