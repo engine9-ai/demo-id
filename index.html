@@ -3,17 +3,19 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>engine9 demo-id — content gates without a server</title>
+    <title>engine9 demo-id — default login widget</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <header class="site-header">
       <p class="brand">engine9 <span>demo-id</span></p>
-      <p class="tagline">Browser-only identity with soft content gates — no core database</p>
+      <p class="tagline">
+        Default <code>@engine9/id</code> use: the Login widget with
+        <strong>Guest</strong> (default) and <strong>Admin</strong> roles —
+        no core, no database.
+      </p>
       <div class="header-actions">
-        <!-- The default way to use Delegate: engine9Id.loginWidget() puts the
-             Login button here. Its dialog logs in, switches email, changes
-             role, and logs out. -->
+        <!-- Default integration: loginWidget() mounts here. -->
         <span data-e9-login-widget></span>
         <span class="greeting" data-e9-min-level="1" hidden>
           Hello, <b data-e9-field="given_name">reader</b>
@@ -28,43 +30,32 @@
           <div><dt>Level</dt><dd><span data-e9-level>0</span> · <span data-e9-level="name">Inferred</span></dd></div>
           <div><dt>Domain UNID</dt><dd id="out-unid"><code>—</code></dd></div>
           <div><dt>Shared fields</dt><dd id="out-fields">none</dd></div>
-          <div><dt>Claimed roles</dt><dd id="out-claims">none</dd></div>
+          <div><dt>Role</dt><dd id="out-role">Guest</dd></div>
         </dl>
         <p class="fine" id="level-meaning"></p>
         <p class="fine">
-          A Level 0 login shares no fields; the page gets only a Domain UNID.
-          <!-- data-e9-login buttons hide themselves once the visitor meets their Level. -->
-          <button type="button" class="btn btn-ghost" data-e9-login="0">Continue as Level 0</button>
-        </p>
-        <p class="fine" data-e9-min-level="1" hidden>
-          Shared the wrong email address? Signing in again goes straight through,
-          because delegate remembers your choice. Open
-          <button type="button" class="btn btn-ghost" data-open-login>Login</button>
-          and choose <strong>Switch email</strong> to pick another address, add
-          one, or use a different Google account.
-        </p>
-        <p class="fine">
-          Required fields (<code>data-e9-fields</code>) are locked on the share page.
-          Optional fields (<code>data-e9-optional-fields</code>) are checkboxes.
-          Level 0 asks for none.
-          Level 1 requires <code>given_name</code>, <code>family_name</code>,
-          and <code>email</code>, with <code>display_name</code> optional.
-          The article requires <code>given_name</code> and <code>email</code>.
-          Confirm email requires <code>email</code> at Level 2.
-          <code>email_type</code> stays on the site form below.
+          Open <strong>Login</strong> in the header. After you sign in, the
+          dialog’s Role section lets you stay <strong>Guest</strong> (default)
+          or claim <strong>Admin</strong> (needs Level 1). Roles are soft —
+          page-local claims, not server authorization.
         </p>
       </section>
 
-      <!--
-        Soft paywall, all in HTML. Gated markup starts `hidden` so it does not
-        flash; the teaser starts visible. engine9Id.mount() flips them.
-      -->
+      <section class="panel guest" data-section="guest">
+        <h2>Guest content</h2>
+        <p>
+          Everyone starts as <strong>Guest</strong>. This section stays visible
+          with or without a login. Soft personalization never hard-blocks the
+          page.
+        </p>
+      </section>
+
+      <!-- Soft paywall: teaser at Level 0, body at Level 1. -->
       <article class="panel story" data-section="story">
         <h2>City council approves new transit plan</h2>
         <p>
           The council voted 7–2 on Tuesday to fund the first phase of a plan that
-          adds three bus rapid transit lines by 2029. Supporters called it the
-          largest transit investment in a generation.
+          adds three bus rapid transit lines by 2029.
         </p>
 
         <div class="paywall" data-e9-max-level="0">
@@ -77,75 +68,39 @@
         <div class="story-body" data-e9-min-level="1" hidden>
           <p>
             Opponents questioned the funding model, which leans on a regional sales
-            tax that voters must approve next spring. “We are being asked to build
-            the bridge before we know if the river is there,” one member said.
+            tax that voters must approve next spring.
           </p>
           <p>
-            Construction on the first line, connecting the university district to
-            downtown, is scheduled to begin in 2027.
+            Construction on the first line is scheduled to begin in 2027.
           </p>
-
-          <div class="comments" data-section="comments">
-            <h3>Comments</h3>
-            <p data-e9-max-level="1">
-              Commenting needs a confirmed email (<strong>Level 2</strong>).
-              <button type="button" class="btn" data-e9-login="2" data-e9-fields="email">Confirm email</button>
-            </p>
-            <p data-e9-min-level="2" hidden>
-              Your email is confirmed. The comment form would load here.
-            </p>
-          </div>
         </div>
       </article>
 
-      <section class="panel public" data-section="public">
-        <h2>Public (everyone)</h2>
+      <section class="panel admin-teaser" data-section="admin-teaser">
+        <h2>Admin preview</h2>
         <p>
-          This section has no gate. Soft personalization never hard-blocks the
-          page; it changes what we show. The gated article text above is still
-          in the page source.
+          Claim <strong>Admin</strong> from the Login dialog (Level 1+) to see
+          the admin briefing below. Guest stays the default until you pick Admin.
+        </p>
+        <p class="fine" data-e9-max-level="0">
+          Sign in first, then open Login → Role → Admin.
         </p>
       </section>
 
-      <section class="panel teaser" data-section="activist-teaser">
-        <h2>Activist preview</h2>
+      <section class="panel admin hidden" data-section="admin" hidden>
+        <h2>Admin briefing</h2>
         <p>
-          People with the <strong>Activist</strong> declared role at
-          <strong>Level 1+</strong> see the full briefing below. You can still
-          read this teaser at Level 0.
-        </p>
-        <label class="claim">
-          <input type="checkbox" id="claim-activist" />
-          Claim Activist role on this page (local only — not a segment)
-        </label>
-      </section>
-
-      <section class="panel activist hidden" data-section="activist" hidden>
-        <h2>Activist briefing (Content X)</h2>
-        <p>
-          Visible because you claimed <code>activist</code> and
-          <code>requiredAuth.minLevel = 1</code> is met. This gate is evaluated
-          in JavaScript (<code>visibleContent</code>) because it combines a
-          page-local claim with a Level. Graduate to <code>@engine9/core</code> +
-          <code>person_segment</code> for hard gates.
+          Visible because you claimed <code>admin</code> and
+          <code>requiredAuth.minLevel = 1</code> is met
+          (<code>visibleContent</code>). This is soft UI only — forgeable in the
+          browser. Hard Admin gates belong in <code>@engine9/core</code>
+          (<code>person_segment</code>), as in the festival demo (Level 3).
         </p>
         <ul>
-          <li>Upcoming actions and volunteer shifts</li>
-          <li>Private Slack invite link (demo placeholder)</li>
-          <li>Same <code>requiredAuth</code> shape as festival VIP/Admin roles</li>
+          <li>Draft schedule and volunteer roster</li>
+          <li>Private Slack invite (demo placeholder)</li>
+          <li>Same <code>requiredAuth</code> shape as core segment roles</li>
         </ul>
-      </section>
-
-      <section class="panel form-panel" data-section="form">
-        <h2>Level 1 person form</h2>
-        <p class="fine">
-          Field names match <code>@engine9/schemas</code>
-          (<code>given_name</code>, <code>family_name</code>, <code>email</code>,
-          <code>email_type</code>). Submit echoes locally — the same JSON posts
-          to core <code>POST /people</code> in the festival demo.
-        </p>
-        <div id="person-form-mount"></div>
-        <pre id="form-echo" class="echo" hidden></pre>
       </section>
 
       <section class="panel debug">
@@ -157,12 +112,10 @@
     <footer class="site-footer">
       <p>
         Docs:
-        <a href="../id/README.md">id README (content gates)</a> ·
-        <a href="../id/docs/without-core.md">without core</a> ·
-        <a href="../id/docs/declared-roles.md">declared roles</a> ·
-        <a href="../id/docs/forms.md">forms</a> ·
+        <a href="https://github.com/engine9-ai/id#the-login-widget">login widget</a> ·
+        <a href="https://github.com/engine9-ai/id/blob/main/docs/declared-roles.md">declared roles</a> ·
         With database:
-        <a href="../demo-festival/README.md">festival demo</a>
+        <a href="https://github.com/engine9-ai/demo-festival">festival demo</a>
       </p>
       <p class="fine">
         Configure <code>window.DEMO_ID</code> before the script if needed
@@ -172,12 +125,12 @@
 
     <script>
       window.DEMO_ID = window.DEMO_ID || {
-        // Override when not serving from a registered Site origin:
+        // Override when not serving from a registered Domain origin:
         // delegateUrl: 'https://delegate.engine9.ai',
         // domain: 'localhost:3002',
       };
     </script>
-    <script src="../id/dist/id.iife.js"></script>
+    <script src="./vendor/id.iife.js"></script>
     <script src="./app.js" type="module"></script>
   </body>
 </html>

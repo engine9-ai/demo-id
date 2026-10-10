@@ -1,14 +1,10 @@
 /**
- * Soft content-gate demo using @engine9/id (IIFE → window.engine9Id).
+ * Default @engine9/id demo: loginWidget() with Guest (default) and Admin roles.
  *
- * Visitors use Delegate through `engine9Id.loginWidget()`, the header's Login
- * button: one dialog to log in, switch email, change role, and log out.
- *
- * Three ways to gate content, all soft (never hard-blocked):
- *   1. HTML attributes (`data-e9-min-level`, `data-e9-max-level`, `data-e9-login`,
- *      `data-e9-field`, …) handled by `engine9Id.mount()` — see index.html.
- *   2. `id.gate({ minLevel, onAllow, onBlock })` hooks — the article blur below.
- *   3. Declared roles (`visibleContent`) when a page-local claim is involved.
+ * Soft gates only (never hard-blocked):
+ *   1. HTML attributes (`data-e9-min-level`, `data-e9-login`, …) via mount()
+ *   2. id.gate() blur on the article while below Level 1
+ *   3. Declared roles via visibleContent (Guest always, Admin when claimed)
  */
 
 const cfg = window.DEMO_ID || {};
@@ -18,17 +14,19 @@ const {
   describeLevel,
   createRoleRegistry,
   visibleContent,
-  createPersonForm,
-  normalizePersonPayload,
-  identityFieldsFromPersonPayload,
 } = window.engine9Id;
 
-const CLAIM_KEY = 'demo_id_claimed_roles';
+const ROLE_KEY = 'demo_id_role';
+const DEFAULT_ROLE = 'guest';
 
 const roles = createRoleRegistry({
-  activist: {
-    id: 'activist',
-    name: 'Activist',
+  guest: {
+    id: 'guest',
+    name: 'Guest',
+  },
+  admin: {
+    id: 'admin',
+    name: 'Admin',
     requiredAuth: { minLevel: 1 },
   },
 });
@@ -48,7 +46,22 @@ function showError(err) {
   setText('#level-meaning', `Login did not finish: ${code}`);
 }
 
-// 1. One call: create the client, finish a returning login, bind data-e9-* markup.
+function readRole() {
+  try {
+    const raw = localStorage.getItem(ROLE_KEY);
+    if (raw && roles[raw]) return raw;
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_ROLE;
+}
+
+function writeRole(roleId) {
+  const next = roles[roleId] ? roleId : DEFAULT_ROLE;
+  localStorage.setItem(ROLE_KEY, next);
+  return next;
+}
+
 const id = mount({
   delegateUrl: cfg.delegateUrl,
   domain: cfg.domain,
@@ -56,22 +69,6 @@ const id = mount({
   onError: showError,
 });
 
-function readClaims() {
-  try {
-    const raw = localStorage.getItem(CLAIM_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.map(String) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeClaims(ids) {
-  localStorage.setItem(CLAIM_KEY, JSON.stringify([...new Set(ids)]));
-}
-
-// The header's Delegate Login button. Its Role section claims the page-local
-// Activist role.
 const widget = loginWidget({
   id,
   delegateUrl: cfg.delegateUrl,
@@ -79,49 +76,37 @@ const widget = loginWidget({
   fields: ['given_name', 'family_name', 'email'],
   optionalFields: ['display_name'],
   roles,
-  role: readClaims()[0] ?? null,
+  role: readRole(),
   onRoleChange: (roleId) => {
-    writeClaims([roleId]);
+    writeRole(roleId || DEFAULT_ROLE);
     render();
   },
-  onLogout: () => writeClaims([]),
+  onLogout: () => writeRole(DEFAULT_ROLE),
   onError: showError,
 });
 
-// Other "Login" links on the page open the same dialog.
-document.addEventListener('click', (event) => {
-  if (event.target instanceof Element && event.target.closest('[data-open-login]')) widget.open();
-});
-
-// 2. JavaScript hook: blur the story container while blocked, in addition to
-//    the hidden/shown paragraphs the attributes manage.
 id.gate({
   minLevel: 1,
   onAllow: () => el('[data-section="story"]')?.classList.remove('locked'),
   onBlock: () => el('[data-section="story"]')?.classList.add('locked'),
 });
 
-/** Short label for the debug panel: which data-e9-* rule an element carries. */
 function gateLabel(node) {
   const section = node.getAttribute('data-section');
   const parts = [];
   if (node.hasAttribute('data-e9-login')) parts.push(`login≥${node.getAttribute('data-e9-login') || '1'}`);
-  if (node.hasAttribute('data-e9-logout')) parts.push('logout');
-  if (node.hasAttribute('data-e9-change-delegate')) parts.push('change-delegate');
   if (node.hasAttribute('data-e9-min-level')) parts.push(`min=${node.getAttribute('data-e9-min-level')}`);
   if (node.hasAttribute('data-e9-max-level')) parts.push(`max=${node.getAttribute('data-e9-max-level')}`);
-  if (node.hasAttribute('data-e9-two-factor')) parts.push('2fa');
   const rule = parts.join(',') || 'none';
   const text = (node.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 24);
   return `${section || node.tagName.toLowerCase()} [${rule}] ${text ? `"${text}"` : ''}`.trim();
 }
 
-// 3. Declared role + status panel + debug: anything the attributes cannot express.
 function render() {
   const identity = id.getIdentity();
   const level = identity?.level ?? 0;
   const desc = describeLevel(level);
-  const claims = readClaims();
+  const roleId = readRole();
 
   el('#out-unid').innerHTML = identity?.sub
     ? `<code>${identity.sub}</code>`
@@ -140,22 +125,18 @@ function render() {
     setText('#out-fields', 'none');
   }
 
-  setText('#out-claims', claims.length ? claims.join(', ') : 'none');
+  setText('#out-role', roles[roleId]?.name ?? 'Guest');
   setText('#level-meaning', desc.meaning);
 
-  const claimBox = el('#claim-activist');
-  if (claimBox) claimBox.checked = claims.includes('activist');
+  // Guest is the default: always "claimed" for soft visibility. Admin only when chosen.
+  const claimedIds = roleId === 'admin' ? ['admin', 'guest'] : ['guest'];
+  const evaluations = visibleContent(roles, { identity, claimedIds });
 
-  const evaluations = visibleContent(roles, {
-    identity,
-    claimedIds: claims,
-  });
-
-  const activistSection = el('[data-section="activist"]');
-  if (activistSection) {
-    const show = evaluations.activist?.visible === true;
-    activistSection.hidden = !show;
-    activistSection.classList.toggle('hidden', !show);
+  const adminSection = el('[data-section="admin"]');
+  if (adminSection) {
+    const show = evaluations.admin?.visible === true;
+    adminSection.hidden = !show;
+    adminSection.classList.toggle('hidden', !show);
   }
 
   const gates = {};
@@ -166,10 +147,10 @@ function render() {
   el('#debug-eval').textContent = JSON.stringify(
     {
       level,
-      claims,
+      role: roleId,
       declaredRoles: evaluations,
       dataE9Gates: gates,
-      note: 'All gates are soft. visible = matches && meetsAuth for declared roles.',
+      note: 'Guest is default. Admin visible = claimed && Level ≥ 1. Soft only.',
     },
     null,
     2,
@@ -179,50 +160,10 @@ function render() {
 async function boot() {
   id.onChange(render);
   await id.ready;
+  // Keep widget role in sync with stored default (Guest).
+  widget.update({ role: readRole() });
   render();
-
-  el('#claim-activist')?.addEventListener('change', (event) => {
-    const checked = event.target.checked;
-    const next = new Set(readClaims());
-    if (checked) next.add('activist');
-    else next.delete('activist');
-    writeClaims([...next]);
-    widget.update({ role: next.has('activist') ? 'activist' : null });
-    render();
-  });
-
-  createPersonForm({
-    mount: '#person-form-mount',
-    fields: ['given_name', 'family_name', 'email', 'email_type'],
-    source_code: 'DEMO_ID_FORM',
-    onSubmit: async (payload) => {
-      const echo = el('#form-echo');
-      echo.hidden = false;
-      echo.textContent = JSON.stringify(
-        {
-          people: [payload],
-          identityFields: identityFieldsFromPersonPayload(payload),
-          note: 'Same shape as core POST /people — echoed locally in demo-id',
-        },
-        null,
-        2,
-      );
-
-      // Optionally step up identity using shared fields (not email_type).
-      const fields = identityFieldsFromPersonPayload(payload);
-      if (fields.length && id.level < 1) {
-        try {
-          await id.requestIdentity({ minLevel: 1, mode: 'popup', fields });
-        } catch (err) {
-          showError(err);
-        }
-      }
-      render();
-    },
-  });
-
-  // Helpful for console experimentation
-  window.idDemo = { id, widget, roles, normalizePersonPayload, render };
+  window.idDemo = { id, widget, roles, render };
 }
 
 boot().catch(showError);

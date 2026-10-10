@@ -77,13 +77,17 @@ main {
   font-size: 1.15rem;
 }
 
-.panel.activist {
+.panel.admin {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
 }
 
-.panel.teaser {
+.panel.admin-teaser {
   border-style: dashed;
+}
+
+.panel.guest {
+  border-color: color-mix(in srgb, var(--muted) 40%, var(--line));
 }
 
 /* Gated elements toggle the `hidden` attribute; keep it authoritative. */

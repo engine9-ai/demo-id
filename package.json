@@ -6,6 +6,7 @@
   "description": "Standalone content-gate demo for @engine9/id (no core, no server)",
   "scripts": {
     "build:id": "npm --prefix ../id run build",
-    "start": "npx --yes serve -l 3002 .."
+    "sync:id": "npm run build:id && mkdir -p vendor && cp ../id/dist/id.iife.js vendor/id.iife.js",
+    "start": "npm run sync:id && npx --yes serve -l 3002 ."
   }
 }
