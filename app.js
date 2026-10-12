@@ -40,7 +40,19 @@ function setText(sel, text) {
   if (node) node.textContent = text;
 }
 
+// A return for a login this browser no longer has (another tab, an email link
+// opened elsewhere) means "sign in again", not "expired". mount() and the widget
+// already skip it; older builds reported it as invalid_request at step "state".
+function isStateMismatch(err) {
+  if (window.engine9Id.isStateMismatch) return window.engine9Id.isStateMismatch(err);
+  return err?.code === 'invalid_request' && err?.details?.step === 'state';
+}
+
 function showError(err) {
+  if (isStateMismatch(err)) {
+    setText('#level-meaning', 'That login belonged to an earlier attempt. Log in again.');
+    return;
+  }
   console.error(err);
   const code = err?.code || err?.message || String(err);
   setText('#level-meaning', `Login did not finish: ${code}`);
