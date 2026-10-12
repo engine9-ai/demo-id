@@ -74,10 +74,23 @@ function writeRole(roleId) {
   return next;
 }
 
+// Delegate's sign-in page in this page's colors and font (styles.css :root).
+// Logins here are popups, which keep Delegate's Google button: `brand`
+// restyles it as "Continue with Google" ('skip' only applies to redirects).
+const brand = {
+  name: 'demo-id',
+  color: '#3d9a6a',
+  background: '#0f1419',
+  text: '#e8eef4',
+  font: 'IBM Plex Sans',
+  google: 'brand',
+};
+
 const id = mount({
   delegateUrl: cfg.delegateUrl,
   domain: cfg.domain,
   storage: 'session',
+  brand,
   onError: showError,
 });
 
@@ -85,6 +98,7 @@ const widget = loginWidget({
   id,
   delegateUrl: cfg.delegateUrl,
   siteName: 'demo-id',
+  brand,
   fields: ['given_name', 'family_name', 'email'],
   optionalFields: ['display_name'],
   roles,

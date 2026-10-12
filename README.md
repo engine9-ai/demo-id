@@ -41,6 +41,7 @@ Optional config before `app.js`:
 | Piece | Behavior |
 | --- | --- |
 | Login widget (header) | `engine9Id.loginWidget()` — email + role pill, or "Login" |
+| Branded sign-in | `brand` in `app.js`: Delegate's sign-in page in this page's colors and IBM Plex Sans, with a "Continue with Google" button in the accent color ([branding](../id/README.md#branding-the-sign-in)) |
 | Guest (default) | Declared role with no `requiredAuth`; everyone starts here |
 | Admin | Declared role with `requiredAuth.minLevel: 1`; claim from the dialog |
 | Soft paywall | Teaser `data-e9-max-level="0"`, body `data-e9-min-level="1"` |
